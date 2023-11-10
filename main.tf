@@ -28,6 +28,15 @@ variable "jar_libraries" {
   }
 }
 
+variable "credentials" {
+  type = map(string)
+  default = {
+    keystore = "/dbfs/hopsworks/10.224.156.127/dbint__fabiolca/dbint__fabiolca__kstore.jks"
+    truststore = "/dbfs/hopsworks/10.224.156.127/dbint__fabiolca/dbint__fabiolca__tstore.jks"
+    passwd = "/dbfs/hopsworks/10.224.156.127/dbint__fabiolca/dbint__fabiolca__cert.key"
+  }
+}
+
 data "databricks_node_type" "smallest" {
   category = "General Purpose"  
   local_disk = "true" 
@@ -46,9 +55,9 @@ resource "databricks_cluster" "this" {
   num_workers             = 1 
   data_security_mode      = "SINGLE_USER"
   spark_conf = {
-    "spark.hadoop.hops.ssl.trustore.name": "/dbfs${var.artifact_location}dbint__fabiolca/dbint__fabiolca__tstore.jks",
-    "spark.hadoop.hops.ssl.keystore.name": "/dbfs${var.artifact_location}dbint__fabiolca/dbint__fabiolca__kstore.jks",
-    "spark.hadoop.hops.ssl.keystores.passwd.name": "/dbfs${var.artifact_location}dbint__fabiolca/dbint__fabiolca__cert.key",
+    "spark.hadoop.hops.ssl.trustore.name": var.credentials.truststore,
+    "spark.hadoop.hops.ssl.keystore.name": var.credentials.keystore,
+    "spark.hadoop.hops.ssl.keystores.passwd.name": var.credentials.passwd,
     "spark.hadoop.hops.rpc.socket.factory.class.default": "io.hops.hadoop.shaded.org.apache.hadoop.net.HopsSSLSocketFactory",
     "spark.serializer": "org.apache.spark.serializer.KryoSerializer",
     "spark.hadoop.hops.ssl.hostname.verifier": "ALLOW_ALL",
